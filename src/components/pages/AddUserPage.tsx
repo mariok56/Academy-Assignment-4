@@ -15,36 +15,36 @@ const AddUserPage: React.FC = () => {
   const createUserMutation = useCreateUser();
   const [lastAttemptedValues, setLastAttemptedValues] = useState<UserFormValues | null>(null);
   
-  // Default values with smart defaults
+  
   const getDefaultValues = (): Partial<UserFormValues> => ({
     firstName: '',
     lastName: '',
     email: '',
-    // Default to 18 years ago
+    
     dateOfBirth: new Date(Date.now() - 18 * 365 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
     status: UserStatus.ACTIVE,
   });
   
-  // Try to load saved draft
+  
   const [initialValues, setInitialValues] = useState<Partial<UserFormValues>>(getDefaultValues());
   
   useEffect(() => {
-    // Check for a saved draft in localStorage
+    
     const savedDraft = localStorage.getItem(FORM_DRAFT_KEY);
     if (savedDraft) {
       try {
         const parsedDraft = JSON.parse(savedDraft);
         setInitialValues(parsedDraft);
       } catch (e) {
-        // If there's an error parsing the draft, use default values
+        
         console.error('Error parsing saved draft:', e);
         localStorage.removeItem(FORM_DRAFT_KEY);
       }
     }
     
-    // Cleanup the draft when component unmounts
+    
     return () => {
-      // Only remove if successfully submitted
+      
       if (createUserMutation.isSuccess) {
         localStorage.removeItem(FORM_DRAFT_KEY);
       }
@@ -53,12 +53,12 @@ const AddUserPage: React.FC = () => {
   
   const handleSubmit = (data: UserFormValues) => {
     setLastAttemptedValues(data);
-    // Save draft in case of error
+   
     localStorage.setItem(FORM_DRAFT_KEY, JSON.stringify(data));
     
     createUserMutation.mutate(data, {
       onSuccess: () => {
-        // Clear draft on success
+       
         localStorage.removeItem(FORM_DRAFT_KEY);
         navigate('/dashboard');
       }
@@ -69,14 +69,14 @@ const AddUserPage: React.FC = () => {
     navigate('/dashboard');
   };
   
-  // Handler to retry a failed creation
+  
   const handleRetry = () => {
     if (lastAttemptedValues) {
       createUserMutation.mutate(lastAttemptedValues);
     }
   };
   
-  // Handler to clear saved draft
+  
   const clearDraft = () => {
     localStorage.removeItem(FORM_DRAFT_KEY);
     setInitialValues(getDefaultValues());

@@ -13,7 +13,7 @@ const AuthTemplate: React.FC<AuthTemplateProps> = ({ children }) => {
   const navigate = useNavigate();
   
   useEffect(() => {
-    // Check if token is valid on component mount
+    
     const isValid = checkAuth();
     if (!isValid) {
       navigate('/login');
@@ -21,7 +21,7 @@ const AuthTemplate: React.FC<AuthTemplateProps> = ({ children }) => {
   }, [checkAuth, navigate]);
   
   if (!isAuthenticated) {
-    return null; // Will be redirected in useEffect
+    return null; 
   }
 
   return (

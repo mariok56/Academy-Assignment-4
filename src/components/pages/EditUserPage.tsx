@@ -50,9 +50,7 @@ const EditUserPage: React.FC = () => {
   // Function to reset form to server state
   const resetForm = () => {
     if (id) {
-      // Invalidate the query to force a refetch
       queryClient.invalidateQueries({ queryKey: [USER_QUERY_KEY, id] });
-      // Directly refetch
       refetch();
       toast.success('Form reset to original values');
     }
@@ -93,7 +91,7 @@ const EditUserPage: React.FC = () => {
     );
   }
   
-  // Map API response to form values
+  
   const initialValues: UserFormValues = {
     firstName: user.firstName,
     lastName: user.lastName || '',
@@ -115,7 +113,6 @@ const EditUserPage: React.FC = () => {
         </div>
         
         <div className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6">
-          {/* Show error message with retry option */}
           {updateUserMutation.isError && (
             <div className="mb-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded relative">
               <p>Failed to update user: {updateUserMutation.error instanceof Error ? updateUserMutation.error.message : 'Unknown error'}</p>
@@ -143,8 +140,6 @@ const EditUserPage: React.FC = () => {
             submitText="Update User"
             onCancel={handleCancel}
           />
-          
-          {/* Form actions footer - REMOVED duplicate Cancel button */}
           <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700">
             <Button
               variant="secondary"

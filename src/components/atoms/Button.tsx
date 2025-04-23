@@ -22,7 +22,7 @@ const Button: React.FC<ButtonProps> = ({
   type = 'button',
   disabled = false,
   fullWidth = false,
-  className = '', // Add default value
+  className = '', 
 }) => {
   const baseStyles = 'font-semibold rounded transition focus:outline-none';
   

@@ -44,7 +44,7 @@ const UserForm: React.FC<UserFormProps> = ({
   } = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
     defaultValues,
-    mode: 'onChange', // Validate on change for immediate feedback
+    mode: 'onChange', 
   });
 
   // Watch form for autosave
@@ -66,7 +66,7 @@ const UserForm: React.FC<UserFormProps> = ({
     reset(initialValues);
   }, [initialValues, reset]);
   
-  // Handle validation on blur for better UX
+ 
   const handleBlur = (field: keyof UserFormValues) => {
     if (touchedFields[field]) {
       trigger(field);

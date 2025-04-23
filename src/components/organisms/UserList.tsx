@@ -20,24 +20,23 @@ const UserList: React.FC = () => {
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
   const [lastDeleteAttempt, setLastDeleteAttempt] = useState<string | null>(null);
   
-  // Apply debounce to search term
+  
   const debouncedSearchTerm = useDebounce(searchInput, 500);
   
   const navigate = useNavigate();
   
-  // Fetch users with React Query (only triggered when debouncedSearchTerm changes)
+
   const { data: users, isLoading, error, refetch } = useUsers(debouncedSearchTerm);
   
-  // Delete user mutation
   const deleteUserMutation = useDeleteUser();
   
-  // Prefetch user data on hover
+
   const prefetchUser = usePrefetchUser();
 
-  // Transform API response to our User type
+  
   const transformUser = useCallback((user: UserResponse): User => {
     return {
-      id: user.id, // Keep as string to preserve UUID format
+      id: user.id, 
       firstName: user.firstName,
       lastName: user.lastName || '',
       initials: getInitials(user.firstName, user.lastName),
@@ -53,19 +52,18 @@ const UserList: React.FC = () => {
     const lastInitial = lastName ? lastName.charAt(0) : '';
     return `${firstInitial}${lastInitial}`.toUpperCase();
   };
+
   
-  // Edit handler - navigates to edit page
   const handleEditUser = useCallback((userId: string) => {
     navigate(`/dashboard/edit/${userId}`);
   }, [navigate]);
   
-  // Handler for mouse entering the edit button area
+  
   const handleEditHover = useCallback((userId: string) => {
-    // Prefetch the user data
     prefetchUser(userId);
   }, [prefetchUser]);
   
-  // Delete user handler - opens confirmation modal
+  
   const handleDeleteUser = useCallback((userId: string) => {
     setDeleteUserId(userId);
     const user = users?.find(u => u.id === userId);
@@ -75,7 +73,7 @@ const UserList: React.FC = () => {
     setShowDeleteModal(true);
   }, [users, transformUser]);
   
-  // Confirm deletion handler
+  
   const confirmDelete = useCallback(() => {
     if (deleteUserId) {
       setLastDeleteAttempt(deleteUserId);
@@ -87,37 +85,37 @@ const UserList: React.FC = () => {
         },
         onError: (err) => {
           toast.error(err instanceof Error ? err.message : 'Failed to delete user');
-          // Keep modal open on error
+          
         }
       });
     }
   }, [deleteUserId, deleteUserMutation]);
   
-  // Cancel deletion handler
+  
   const cancelDelete = useCallback(() => {
     setShowDeleteModal(false);
     setDeleteUserId(null);
     setUserToDelete(null);
   }, []);
   
-  // Retry delete on error
+
   const retryDelete = useCallback(() => {
     if (lastDeleteAttempt) {
       deleteUserMutation.mutate(lastDeleteAttempt);
     }
   }, [lastDeleteAttempt, deleteUserMutation]);
 
-  // Clear search handler
+  
   const clearSearch = useCallback(() => {
     setSearchInput('');
   }, []);
 
-  // Handle search change with icon
+  
   const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchInput(e.target.value);
   }, []);
 
-  // Render the content based on loading, error, and users state
+  
   const renderContent = () => {
     if (isLoading) {
       return (
@@ -203,11 +201,7 @@ const UserList: React.FC = () => {
           )}
         </div>
       </div>
-      
-      {/* Content area changes based on state */}
       {renderContent()}
-      
-      {/* Enhanced Delete confirmation modal */}
       <ConfirmationModal
         isOpen={showDeleteModal}
         title="Delete User"

@@ -5,10 +5,10 @@ import Button from '../atoms/Button';
 interface ConfirmationModalProps {
   isOpen: boolean;
   title: string;
-  message: React.ReactNode; // Changed from string to ReactNode
+  message: React.ReactNode; 
   confirmLabel?: string;
   cancelLabel?: string;
-  confirmDisabled?: boolean; // Added optional prop for disabling the confirm button
+  confirmDisabled?: boolean; 
   onConfirm: () => void;
   onCancel: () => void;
 }

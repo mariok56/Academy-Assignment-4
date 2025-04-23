@@ -54,7 +54,6 @@ const LoginPage: React.FC = () => {
 
       // Save token and navigate
       login(data.result.data.accessToken, data.result.data.expiresIn);
-      // Add a short delay to ensure token is saved before navigating
       setTimeout(() => {
         navigate('/dashboard');
       }, 100);

@@ -14,8 +14,8 @@ export const useUsers = (search?: string) => {
   return useQuery({
     queryKey: [USERS_QUERY_KEY, { search }],
     queryFn: () => getUsers(search),
-    staleTime: 30000, // Data remains fresh for 30 seconds
-    gcTime: 5 * 60 * 1000, // Cache for 5 minutes (renamed from cacheTime)
+    staleTime: 30000, 
+    gcTime: 5 * 60 * 1000, 
   });
 };
 
@@ -27,7 +27,7 @@ export const useUser = (id: string) => {
     queryKey: [USER_QUERY_KEY, id],
     queryFn: () => getUser(id),
     enabled: !!id,
-    staleTime: 60000, // 1 minute - individual user data changes less frequently
+    staleTime: 60000, 
   });
 };
 
@@ -58,7 +58,7 @@ export const useCreateUser = () => {
   return useMutation({
     mutationFn: (userData: UserInput) => createUser(userData),
     onSuccess: () => {
-      // Invalidate the users list query to trigger a refetch
+      
       queryClient.invalidateQueries({ queryKey: [USERS_QUERY_KEY] });
       toast.success("User created successfully");
     },
@@ -101,7 +101,7 @@ export const useUpdateUser = (id: string) => {
         );
       }
       
-      // Return a context object with the snapshotted values
+      
       return { previousUserData, previousUsers };
     },
     onError: (error, newUserData, context) => {
@@ -115,7 +115,7 @@ export const useUpdateUser = (id: string) => {
       toast.error(error.message || "Failed to update user");
     },
     onSettled: () => {
-      // Always invalidate the queries to ensure they're up to date with the server
+      
       queryClient.invalidateQueries({ queryKey: [USER_QUERY_KEY, id] });
       queryClient.invalidateQueries({ queryKey: [USERS_QUERY_KEY] });
       toast.success("User updated successfully");
@@ -131,22 +131,18 @@ export const useDeleteUser = () => {
   
   return useMutation({
     mutationFn: (id: string) => deleteUser(id),
-    // Optimistic update for delete
+    
     onMutate: async (deletedId) => {
       // Cancel any outgoing refetches
       await queryClient.cancelQueries({ queryKey: [USERS_QUERY_KEY] });
-      
-      // Snapshot the previous users list
       const previousUsers = queryClient.getQueryData<UserResponse[]>([USERS_QUERY_KEY]);
-      
-      // Optimistically update the users list
       if (previousUsers) {
         queryClient.setQueryData<UserResponse[]>([USERS_QUERY_KEY], old => 
           old?.filter(user => user.id !== deletedId) || []
         );
       }
       
-      // Return the previous users list for potential rollback
+      
       return { previousUsers };
     },
     onError: (error, deletedId, context) => {
@@ -160,7 +156,7 @@ export const useDeleteUser = () => {
       toast.success("User deleted successfully");
     },
     onSettled: () => {
-      // Always invalidate the users list query to ensure it's up to date with the server
+     
       queryClient.invalidateQueries({ queryKey: [USERS_QUERY_KEY] });
     },
   });
