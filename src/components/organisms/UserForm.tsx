@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { userSchema, UserFormValues } from '../../schemas/userSchema';
@@ -13,6 +13,8 @@ interface UserFormProps {
   submitText: string;
   onCancel: () => void;
 }
+
+const FORM_AUTOSAVE_KEY = 'userFormAutoSave';
 
 const UserForm: React.FC<UserFormProps> = ({
   initialValues,
@@ -35,16 +37,47 @@ const UserForm: React.FC<UserFormProps> = ({
   const { 
     register, 
     handleSubmit, 
-    formState: { errors },
+    formState: { errors, isDirty, touchedFields },
+    reset,
+    watch,
+    trigger,
   } = useForm<UserFormValues>({
     resolver: zodResolver(userSchema),
     defaultValues,
+    mode: 'onChange', // Validate on change for immediate feedback
   });
+
+  // Watch form for autosave
+  const watchedValues = watch();
+  
+  // Set up autosave
+  useEffect(() => {
+    if (isDirty) {
+      const timeoutId = setTimeout(() => {
+        localStorage.setItem(FORM_AUTOSAVE_KEY, JSON.stringify(watchedValues));
+      }, 1000);
+      
+      return () => clearTimeout(timeoutId);
+    }
+  }, [watchedValues, isDirty]);
+  
+  // Reset form when initialValues change
+  useEffect(() => {
+    reset(initialValues);
+  }, [initialValues, reset]);
+  
+  // Handle validation on blur for better UX
+  const handleBlur = (field: keyof UserFormValues) => {
+    if (touchedFields[field]) {
+      trigger(field);
+    }
+  };
 
   const inputClassName = (fieldName: keyof UserFormValues) => `
     w-full px-3 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary 
     ${darkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}
-    ${errors[fieldName] ? 'border-red-500' : ''}
+    ${errors[fieldName] ? 'border-red-500 focus:ring-red-500' : ''}
+    transition duration-150
   `;
 
   const errorMessage = (message?: string) => 
@@ -68,7 +101,9 @@ const UserForm: React.FC<UserFormProps> = ({
             id="firstName"
             type="text"
             className={inputClassName('firstName')}
-            {...register('firstName')}
+            {...register('firstName', {
+              onBlur: () => handleBlur('firstName')
+            })}
           />
           {errorMessage(errors.firstName?.message)}
         </div>
@@ -84,7 +119,9 @@ const UserForm: React.FC<UserFormProps> = ({
             id="lastName"
             type="text"
             className={inputClassName('lastName')}
-            {...register('lastName')}
+            {...register('lastName', {
+              onBlur: () => handleBlur('lastName')
+            })}
           />
           {errorMessage(errors.lastName?.message)}
         </div>
@@ -100,7 +137,9 @@ const UserForm: React.FC<UserFormProps> = ({
             id="email"
             type="email"
             className={inputClassName('email')}
-            {...register('email')}
+            {...register('email', {
+              onBlur: () => handleBlur('email')
+            })}
           />
           {errorMessage(errors.email?.message)}
         </div>
@@ -116,7 +155,9 @@ const UserForm: React.FC<UserFormProps> = ({
             id="dateOfBirth"
             type="date"
             className={inputClassName('dateOfBirth')}
-            {...register('dateOfBirth')}
+            {...register('dateOfBirth', {
+              onBlur: () => handleBlur('dateOfBirth')
+            })}
           />
           {errorMessage(errors.dateOfBirth?.message)}
         </div>
@@ -131,7 +172,9 @@ const UserForm: React.FC<UserFormProps> = ({
           <select
             id="status"
             className={inputClassName('status')}
-            {...register('status')}
+            {...register('status', {
+              onBlur: () => handleBlur('status')
+            })}
           >
             <option value={UserStatus.ACTIVE}>Active</option>
             <option value={UserStatus.LOCKED}>Locked</option>

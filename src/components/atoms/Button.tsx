@@ -11,6 +11,7 @@ interface ButtonProps {
   type?: 'button' | 'submit' | 'reset';
   disabled?: boolean;
   fullWidth?: boolean;
+  className?: string; 
 }
 
 const Button: React.FC<ButtonProps> = ({
@@ -21,6 +22,7 @@ const Button: React.FC<ButtonProps> = ({
   type = 'button',
   disabled = false,
   fullWidth = false,
+  className = '', // Add default value
 }) => {
   const baseStyles = 'font-semibold rounded transition focus:outline-none';
   
@@ -49,6 +51,7 @@ const Button: React.FC<ButtonProps> = ({
         ${sizeStyles[size]}
         ${widthStyle}
         ${disabled ? 'opacity-70 cursor-not-allowed' : ''}
+        ${className} // Add custom className last to allow overrides
       `}
     >
       {children}

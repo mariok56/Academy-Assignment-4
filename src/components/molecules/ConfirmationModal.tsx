@@ -5,9 +5,10 @@ import Button from '../atoms/Button';
 interface ConfirmationModalProps {
   isOpen: boolean;
   title: string;
-  message: string;
+  message: React.ReactNode; // Changed from string to ReactNode
   confirmLabel?: string;
   cancelLabel?: string;
+  confirmDisabled?: boolean; // Added optional prop for disabling the confirm button
   onConfirm: () => void;
   onCancel: () => void;
 }
@@ -18,6 +19,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
   message,
   confirmLabel = 'Confirm',
   cancelLabel = 'Cancel',
+  confirmDisabled = false,
   onConfirm,
   onCancel,
 }) => {
@@ -33,9 +35,9 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
         }`}
       >
         <h2 className="text-xl font-bold mb-3">{title}</h2>
-        <p className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+        <div className={`mb-6 ${darkMode ? 'text-gray-300' : 'text-gray-600'}`}>
           {message}
-        </p>
+        </div>
         
         <div className="flex justify-end space-x-2">
           <Button
@@ -47,6 +49,7 @@ const ConfirmationModal: React.FC<ConfirmationModalProps> = ({
           <Button
             variant="danger"
             onClick={onConfirm}
+            disabled={confirmDisabled}
           >
             {confirmLabel}
           </Button>

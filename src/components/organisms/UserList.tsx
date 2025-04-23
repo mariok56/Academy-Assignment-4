@@ -2,7 +2,7 @@ import React, { useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import toast from 'react-hot-toast';
 
-import { useDeleteUser, useUsers } from '../../api/userHooks';
+import { useDeleteUser, usePrefetchUser, useUsers } from '../../api/userHooks';
 import { UserResponse } from '../../api/types';
 import { User } from '../../types/User';
 import { useDebounce } from '../../hooks/useDebouce';
@@ -11,11 +11,14 @@ import SearchBar from '../molecules/SearchBar';
 import UserCard from './UserCard';
 import Spinner from '../atoms/Spinner';
 import ConfirmationModal from '../molecules/ConfirmationModal';
+import Button from '../atoms/Button';
 
 const UserList: React.FC = () => {
   const [searchInput, setSearchInput] = useState<string>('');
   const [deleteUserId, setDeleteUserId] = useState<string | null>(null);
+  const [userToDelete, setUserToDelete] = useState<User | null>(null);
   const [showDeleteModal, setShowDeleteModal] = useState<boolean>(false);
+  const [lastDeleteAttempt, setLastDeleteAttempt] = useState<string | null>(null);
   
   // Apply debounce to search term
   const debouncedSearchTerm = useDebounce(searchInput, 500);
@@ -23,10 +26,13 @@ const UserList: React.FC = () => {
   const navigate = useNavigate();
   
   // Fetch users with React Query (only triggered when debouncedSearchTerm changes)
-  const { data: users, isLoading, error } = useUsers(debouncedSearchTerm);
+  const { data: users, isLoading, error, refetch } = useUsers(debouncedSearchTerm);
   
   // Delete user mutation
   const deleteUserMutation = useDeleteUser();
+  
+  // Prefetch user data on hover
+  const prefetchUser = usePrefetchUser();
 
   // Transform API response to our User type
   const transformUser = useCallback((user: UserResponse): User => {
@@ -53,22 +59,35 @@ const UserList: React.FC = () => {
     navigate(`/dashboard/edit/${userId}`);
   }, [navigate]);
   
+  // Handler for mouse entering the edit button area
+  const handleEditHover = useCallback((userId: string) => {
+    // Prefetch the user data
+    prefetchUser(userId);
+  }, [prefetchUser]);
+  
   // Delete user handler - opens confirmation modal
   const handleDeleteUser = useCallback((userId: string) => {
     setDeleteUserId(userId);
+    const user = users?.find(u => u.id === userId);
+    if (user) {
+      setUserToDelete(transformUser(user));
+    }
     setShowDeleteModal(true);
-  }, []);
+  }, [users, transformUser]);
   
   // Confirm deletion handler
   const confirmDelete = useCallback(() => {
     if (deleteUserId) {
+      setLastDeleteAttempt(deleteUserId);
       deleteUserMutation.mutate(deleteUserId, {
         onSuccess: () => {
           setShowDeleteModal(false);
           setDeleteUserId(null);
+          setUserToDelete(null);
         },
         onError: (err) => {
           toast.error(err instanceof Error ? err.message : 'Failed to delete user');
+          // Keep modal open on error
         }
       });
     }
@@ -78,6 +97,24 @@ const UserList: React.FC = () => {
   const cancelDelete = useCallback(() => {
     setShowDeleteModal(false);
     setDeleteUserId(null);
+    setUserToDelete(null);
+  }, []);
+  
+  // Retry delete on error
+  const retryDelete = useCallback(() => {
+    if (lastDeleteAttempt) {
+      deleteUserMutation.mutate(lastDeleteAttempt);
+    }
+  }, [lastDeleteAttempt, deleteUserMutation]);
+
+  // Clear search handler
+  const clearSearch = useCallback(() => {
+    setSearchInput('');
+  }, []);
+
+  // Handle search change with icon
+  const handleSearchChange = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchInput(e.target.value);
   }, []);
 
   // Render the content based on loading, error, and users state
@@ -93,15 +130,31 @@ const UserList: React.FC = () => {
     if (error) {
       return (
         <div className="p-4 rounded-md bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-100">
-          {error instanceof Error ? error.message : 'An error occurred'}
+          <p>{error instanceof Error ? error.message : 'An error occurred while fetching users'}</p>
+          <Button 
+            variant="primary" 
+            onClick={() => refetch()} 
+            className="mt-2"
+          >
+            Try Again
+          </Button>
         </div>
       );
     }
 
     if (!users || users.length === 0) {
       return (
-        <div className="p-4 rounded-md bg-gray-100 dark:bg-gray-800">
-          No users found matching your search criteria.
+        <div className="p-4 rounded-md bg-gray-100 dark:bg-gray-800 text-center">
+          {searchInput ? (
+            <>
+              <p className="mb-2">No users found matching "{searchInput}"</p>
+              <Button variant="secondary" onClick={clearSearch}>
+                Clear Search
+              </Button>
+            </>
+          ) : (
+            <p>No users found. Add your first user!</p>
+          )}
         </div>
       );
     }
@@ -114,6 +167,7 @@ const UserList: React.FC = () => {
             user={transformUser(user)} 
             onDelete={handleDeleteUser}
             onEdit={handleEditUser}
+            onEditHover={handleEditHover}
           />
         ))}
       </div>
@@ -122,26 +176,72 @@ const UserList: React.FC = () => {
 
   return (
     <div>
-      {/* SearchBar with input value (not debounced) for immediate UI feedback */}
+      {/* Enhanced SearchBar with icon and clear button */}
       <div className="mb-6">
-        <SearchBar 
-          searchTerm={searchInput}
-          setSearchTerm={setSearchInput}
-        />
+        <div className="relative">
+          <div className="absolute inset-y-0 left-0 flex items-center pl-3 pointer-events-none">
+            <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+            </svg>
+          </div>
+          <input
+            type="text"
+            className="w-full pl-10 pr-10 py-2 border rounded-md focus:outline-none focus:ring-2 focus:ring-primary"
+            placeholder="Search users..."
+            value={searchInput}
+            onChange={handleSearchChange}
+          />
+          {searchInput && (
+            <button 
+              className="absolute inset-y-0 right-0 flex items-center pr-3"
+              onClick={clearSearch}
+            >
+              <svg className="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path>
+              </svg>
+            </button>
+          )}
+        </div>
       </div>
       
       {/* Content area changes based on state */}
       {renderContent()}
       
-      {/* Delete confirmation modal */}
+      {/* Enhanced Delete confirmation modal */}
       <ConfirmationModal
         isOpen={showDeleteModal}
         title="Delete User"
-        message="Are you sure you want to delete this user? This action cannot be undone."
-        confirmLabel="Delete"
+        message={
+          userToDelete ? (
+            <>
+              <p>Are you sure you want to delete:</p>
+              <div className="mt-2 p-3 bg-gray-100 dark:bg-gray-700 rounded-md">
+                <p className="font-bold">{userToDelete.firstName} {userToDelete.lastName}</p>
+                <p className="text-sm text-gray-500 dark:text-gray-300">{userToDelete.email}</p>
+              </div>
+              <p className="mt-2 text-sm text-red-500">This action cannot be undone.</p>
+            </>
+          ) : (
+            "Are you sure you want to delete this user? This action cannot be undone."
+          )
+        }
+        confirmLabel={deleteUserMutation.isPending ? "Deleting..." : "Delete"}
         onConfirm={confirmDelete}
         onCancel={cancelDelete}
       />
+      
+      {/* Show error message with retry option */}
+      {deleteUserMutation.isError && (
+        <div className="fixed bottom-4 right-4 bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded shadow-md">
+          <p>Failed to delete user: {deleteUserMutation.error instanceof Error ? deleteUserMutation.error.message : 'Unknown error'}</p>
+          <button 
+            onClick={retryDelete} 
+            className="underline ml-2"
+          >
+            Try Again
+          </button>
+        </div>
+      )}
     </div>
   );
 };
