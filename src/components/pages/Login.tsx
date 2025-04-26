@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuthStore } from '../../store/authStore';
 import { useThemeStore } from '../../store/themeStore';
+import { useLogin } from '../../api/authHook';
 import FormGroup from '../molecules/FormGroup';
 import Button from '../atoms/Button';
 
@@ -9,12 +10,14 @@ const LoginPage: React.FC = () => {
   const [email, setEmail] = useState<string>('');
   const [password, setPassword] = useState<string>('');
   const [showPassword, setShowPassword] = useState<boolean>(false);
-  const [isLoading, setIsLoading] = useState<boolean>(false);
-  const [error, setError] = useState<string>('');
-  const navigate = useNavigate();
+  const [localError, setLocalError] = useState<string>('');
   
-  const { login, isAuthenticated, checkAuth } = useAuthStore();
+  const navigate = useNavigate();
+  const { isAuthenticated, checkAuth } = useAuthStore();
   const { darkMode } = useThemeStore();
+  
+  // React Query mutation hook
+  const loginMutation = useLogin();
   
   useEffect(() => {
     // Redirect to dashboard if already authenticated
@@ -25,51 +28,32 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setError('');
+    setLocalError('');
 
     // Form validation
     if (!email || !password) {
-      setError('Fill required fields.');
+      setLocalError('Fill required fields.');
       return;
     }
 
-    setIsLoading(true);
-
-    try {
-      const response = await fetch('/api/login', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ email, password }),
-      });
-
-      const data = await response.json();
-
-      if (data.status === 401) {
-        setError(data.result.message);
-        setIsLoading(false);
-        return;
-      }
-
-      // Save token and navigate
-      login(data.result.data.accessToken, data.result.data.expiresIn);
-      setTimeout(() => {
-        navigate('/dashboard');
-      }, 100);
-    } catch (err) {
-      setError('An error occurred. Please try again.');
-      setIsLoading(false);
-    }
+    // Execute the login mutation
+    loginMutation.mutate({ email, password });
   };
 
   const handleEmailChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setEmail(e.target.value);
+    // Clear error when user starts typing
+    if (localError) setLocalError('');
   };
 
   const handlePasswordChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setPassword(e.target.value);
+    // Clear error when user starts typing
+    if (localError) setLocalError('');
   };
+
+  // Show either local validation error or mutation error
+  const error = localError || (loginMutation.isError ? 'Invalid credentials. Please try again.' : '');
 
   return (
     <div className={`min-h-screen flex items-center justify-center ${
@@ -132,10 +116,10 @@ const LoginPage: React.FC = () => {
           <Button
             type="submit"
             variant="primary"
-            disabled={isLoading}
+            disabled={loginMutation.isPending}
             fullWidth
           >
-            {isLoading ? 'Logging in...' : 'Login'}
+            {loginMutation.isPending ? 'Logging in...' : 'Login'}
           </Button>
         </form>
       </div>
