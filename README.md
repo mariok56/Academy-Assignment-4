@@ -42,6 +42,27 @@ raw.githubusercontent.com
 .
 Tech Stack
 
+## 📸 Screenshots
+
+### 🔐 Login
+![Login](./public/screenshots/login.png)
+
+### 🧑‍💼 Dashboard – User List
+![User List](./public/screenshots/dashboard.png)
+
+### ➕ Add User
+![Add User](./public/screenshots/add-user.png)
+
+### ✏️ Edit User
+![Edit User](./public/screenshots/edit-user.png)
+
+### 🗑️ Delete Confirmation
+![Delete](./public/screenshots/delete-confirm.png)
+
+### 🌙 Dark / Light Mode
+![Theme Toggle](./public/screenshots/dark-light.png)
+
+
 The project relies on the following libraries and tools:
 
 React 19 with TypeScript – the foundation of the UI
