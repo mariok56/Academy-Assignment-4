@@ -1,48 +1,85 @@
-Academy Assignment 4 – User Management App
-Overview
+# Academy Assignment 4 – User Management App
 
-This project is a User Management web application built with React and TypeScript. It demonstrates how to build a secure and responsive admin dashboard using modern React tooling. The app includes authentication, CRUD operations for users (create, read, update, delete), search, optimistic updates, and a clean user interface with dark‑mode support. It was designed as part of an academy assignment and uses a mock API for local development.
+This project is a **User Management Dashboard** built with **React + TypeScript**.  
+It demonstrates authentication, protected routes, CRUD operations, React Query, Zustand state management, form validation with Zod, dark mode, optimistic updates, and a clean responsive UI.
 
-Key Features
-Feature	Description
-Login & Protected Routes	Users must log in to access the dashboard. The app stores a JWT in local storage, checks its expiration on each page load, and redirects unauthenticated users to the login page
-raw.githubusercontent.com
-.
-Dashboard	After logging in, users land on a dashboard that displays a list of all users. It includes a search bar and quick actions for editing or deleting records
-raw.githubusercontent.com
-raw.githubusercontent.com
-.
-Create User	An “Add User” page features a form for entering first name, last name, email, date of birth and status. Unsaved changes are stored as a draft in localStorage, and the form uses React Hook Form and Zod for validation
-raw.githubusercontent.com
-raw.githubusercontent.com
-.
-Edit & Update User	The “Edit User” page pre‑populates the form with existing data and performs optimistic updates. Users can reset the form to the current server state, and there is robust error handling with retry options
-raw.githubusercontent.com
-raw.githubusercontent.com
-.
-Delete & Confirm	A delete action triggers a confirmation modal; successful deletions show toast notifications and the user list updates automatically
-raw.githubusercontent.com
-.
-Search & Prefetch	The user list includes a search input that filters by name, and hovering over an Edit button prefetches the user data to speed up navigation
-raw.githubusercontent.com
-.
-Dark‑Mode Toggle	A simple toggle, stored in local storage, switches between light and dark themes across the whole app
-raw.githubusercontent.com
-.
-State Management	Authentication and theme state are managed with Zustand stores
-raw.githubusercontent.com
-raw.githubusercontent.com
-, while server interactions use React Query hooks that handle caching, optimistic updates and error handling
-raw.githubusercontent.com
-raw.githubusercontent.com
-.
-Mock API & Error Handling	The app integrates with a mock backend via vite-plugin-mock. API functions add auth headers and handle 401 errors by logging the user out automatically
-raw.githubusercontent.com
-raw.githubusercontent.com
-.
-Tech Stack
+The app uses a **mock API** (via Vite Plugin Mock) for local development.
+
+---
+
+## ✨ Key Features
+
+---
+
+### 🔐 Login & Protected Routes
+- Users must log in to access the dashboard  
+- Auth state stored using Zustand  
+- JWT saved in localStorage  
+- Auto-logout when token expires  
+- Unauthenticated users are redirected to the login page  
+
+---
+
+### 🧑‍💼 Dashboard
+- Displays a list of all users  
+- Search by name  
+- Prefetching user data on hover for faster navigation  
+- Quick actions for Edit / Delete  
+
+---
+
+### ➕ Create User
+- Form includes: first name, last name, email, date of birth, status  
+- Validation using **React Hook Form + Zod**  
+- Unsaved changes are saved as **drafts in localStorage**  
+- Client-side validation & form reset  
+
+---
+
+### ✏️ Edit User
+- Pre-filled form with existing data  
+- **Optimistic updates** using React Query  
+- Reset button restores original server data  
+- Error-handling and retry logic  
+
+---
+
+### 🗑️ Delete User
+- Confirmation modal before deletion  
+- On success → Show toast notification  
+- User list updates automatically  
+
+---
+
+### 🔍 Search & Prefetch
+- Realtime filtering by name  
+- Hovering over "Edit" prefetches data for fast transitions  
+
+---
+
+### 🌙 Dark Mode Toggle
+- Global dark/light theme switch  
+- Theme persisted in localStorage  
+
+---
+
+### 🗂️ State & Data Management
+- **Zustand** → auth + theme state  
+- **React Query** → caching, mutations, optimistic updates  
+- Auto-handling of 401 errors (logs user out)  
+
+---
+
+### 🧪 Mock API & Error Handling
+- Uses **vite-plugin-mock** for mock REST API  
+- All API calls include auth headers  
+- Automatic logout on unauthorized requests  
+
+---
 
 ## 📸 Screenshots
+
+> Add your real screenshots to: `/public/screenshots/`
 
 ### 🔐 Login
 ![Login](./public/screenshots/login.png)
@@ -62,98 +99,118 @@ Tech Stack
 ### 🌙 Dark / Light Mode
 ![Theme Toggle](./public/screenshots/dark-light.png)
 
+---
 
-The project relies on the following libraries and tools:
+## 🧰 Tech Stack
 
-React 19 with TypeScript – the foundation of the UI
+### Frontend
+- React 19  
+- TypeScript  
+- React Router v7  
 
-Vite – fast dev server and build tool
+### Styling
+- Tailwind CSS  
 
-React Router v7 – routing and route protection
-raw.githubusercontent.com
+### Forms
+- React Hook Form  
+- Zod  
 
-Tailwind CSS – responsive styling and utility classes
+### State Management
+- Zustand (auth + theme)
 
-React Hook Form & Zod – forms and schema validation
-raw.githubusercontent.com
+### Data Fetching
+- @tanstack/react-query  
 
-Zustand – lightweight state management for auth and theme toggles
-raw.githubusercontent.com
-raw.githubusercontent.com
+### Utilities
+- date-fns  
+- React Hot Toast  
+- Vite Plugin Mock  
 
-@tanstack/react-query – data fetching, caching, optimistic updates
-raw.githubusercontent.com
-raw.githubusercontent.com
+---
 
-date-fns – date parsing and formatting
+## 📂 Project Structure
 
-React Hot Toast – notifications on success or error events
-
-Vite Plugin Mock – provides a mock REST API during development
-
-Project Structure
+```
 Academy-Assignment-4/
 ├── src/
-│   ├── api/              # API client functions and auth helpers:contentReference[oaicite:22]{index=22}:contentReference[oaicite:23]{index=23}
-│   ├── components/       # Reusable UI components (organisms, molecules and atoms)
-│   ├── hooks/            # React Query hooks for CRUD and prefetching:contentReference[oaicite:24]{index=24}
-│   ├── layouts/          # Layouts for auth pages and dashboard
-│   ├── pages/            # Page components such as Login, Dashboard, Add/Edit User
-│   ├── router/           # Route definitions and lazy loading:contentReference[oaicite:25]{index=25}
-│   ├── schemas/          # Zod schemas for form validation
-│   ├── store/            # Zustand stores for auth and theme:contentReference[oaicite:26]{index=26}:contentReference[oaicite:27]{index=27}
-│   ├── types/            # TypeScript interfaces and types
-│   └── utils/            # Utility functions (e.g., debounce)
-├── mock/                 # Mock API handlers and static data
+│   ├── api/              # API client functions & auth helpers
+│   ├── components/       # UI components (atoms, molecules, organisms)
+│   ├── hooks/            # React Query hooks (CRUD, prefetch)
+│   ├── layouts/          # Dashboard & Auth layouts
+│   ├── pages/            # Login, Dashboard, Add/Edit User
+│   ├── router/           # Route definitions & protected routes
+│   ├── schemas/          # Zod validation schemas
+│   ├── store/            # Zustand stores (auth + theme)
+│   ├── types/            # TypeScript interfaces
+│   └── utils/            # Helpers (debounce, formatters, etc.)
+├── mock/                 # Mock API (vite-plugin-mock)
 ├── public/
-│   └── index.html        # HTML template
-└── package.json          # Scripts and dependencies:contentReference[oaicite:28]{index=28}
+│   └── index.html
+└── package.json          # Scripts & dependencies
+```
 
-Getting Started
+---
 
-Follow these steps to run the project locally:
+## 🚀 Getting Started
 
-Clone the repository
-
+### 1️⃣ Clone the repository
+```bash
 git clone https://github.com/mariok56/Academy-Assignment-4.git
 cd Academy-Assignment-4
+```
 
-
-Install dependencies
-
+### 2️⃣ Install dependencies
+```bash
 npm install
+```
 
-
-Start the development server
-
+### 3️⃣ Start the development server
+```bash
 npm run dev
+```
 
+Visit the app at:  
+http://localhost:5173
 
-The app will run on http://localhost:5173 by default. The mock API will also be available automatically via Vite.
+The mock API automatically runs via **Vite Plugin Mock**.
 
-Build for production
-
+### 4️⃣ Build for production
+```bash
 npm run build
+```
 
+The optimized app will be inside the **dist/** folder.
 
-The optimized build will be output to the dist directory.
+---
 
-Environment Variables
+## 🔧 Environment Variables
 
-This project doesn’t require a real backend during development. The mock API is configured in vite.config.ts. If you decide to connect to a real backend, you can supply environment variables (e.g. VITE_API_URL) in a .env file. See src/api/userApi.ts for how headers and base URLs are defined
-raw.githubusercontent.com
-.
+This project does **not** require a real backend.  
+The mock API is already configured in `vite.config.ts`.
 
-Contributing
+If you later connect a real backend, create a `.env`:
 
-Contributions are welcome! If you spot a bug or have a feature request, open an issue or a pull request. When submitting a PR, please:
+```
+VITE_API_URL=
+```
 
-Create a descriptive branch name.
+And update API functions in `src/api/userApi.ts`.
 
-Follow the existing code style and include relevant tests if applicable.
+---
 
-Add or update the README if your changes affect usage.
+## 🧑‍💻 Contributing
 
-License
+Contributions are welcome!
 
-This project is provided for educational purposes as part of an academy assignment and does not have an explicit open‑source license. Please contact the repository owner for permissions beyond personal use.
+1. Create a descriptive branch name  
+2. Follow the existing code style  
+3. Add/update tests if needed  
+4. Update README if your changes affect usage  
+5. Submit a pull request  
+
+---
+
+## 📄 License
+
+This project is for **educational purposes** as part of an academy assignment.  
+Contact the repository owner for permissions beyond personal use.
