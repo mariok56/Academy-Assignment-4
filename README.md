@@ -79,8 +79,6 @@ The app uses a **mock API** (via Vite Plugin Mock) for local development.
 
 ## 📸 Screenshots
 
-> Add your real screenshots to: `/public/screenshots/`
-
 ### 🔐 Login
 ![Login](./public/screenshots/login.png)
 
